@@ -9,23 +9,23 @@ block content
       
       .demo-credentials
         p.demo-title 🔑 Тестові облікові записи:
-        p 
-          strong Admin: 
-          | username: 
-          code admin
-          |, password: 
+        p
+          strong Admin:
+          | email:
+          code admin@example.com
+          |, пароль:
           code admin123
-        p 
-          strong User: 
-          | username: 
-          code user
-          |, password: 
+        p
+          strong User:
+          | email:
+          code user@example.com
+          |, пароль:
           code user123
       
       form#loginForm.auth-form
         .form-group
-          label(for='username') Ім'я користувача
-          input#username.form-control(type='text', name='username', required, placeholder='Введіть ім\'я користувача')
+          label(for='email') Email
+          input#email.form-control(type='email', name='email', required, placeholder='Введіть email')
         
         .form-group
           label(for='password') Пароль
@@ -43,7 +43,7 @@ block content
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const errorMessage = document.getElementById('errorMessage');
       
@@ -53,7 +53,7 @@ block content
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ email, password })
         });
         
         const data = await response.json();

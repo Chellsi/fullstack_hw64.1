@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import ejs from 'ejs';
@@ -7,7 +8,8 @@ import usersRouter from './routes/users.js';
 import articlesRouter from './routes/articles.js';
 import authRouter from './routes/auth.js';
 import themeRouter from './routes/theme.js';
-import { logRequests, optionalAuth, attachUserToLocals } from './middlewares/index.js';
+import { logRequests, optionalAuth, attachUserToLocals, authenticateToken } from './middlewares/index.js';
+import passport from './config/passport.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,6 +27,20 @@ app.engine('ejs', ejs.__express);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'change-this-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    }
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Middleware для статичних файлів (CSS, favicon, тощо)
 app.use(express.static(join(__dirname, 'public')));
@@ -62,6 +78,14 @@ app.use('/users', usersRouter);
 app.use('/articles', articlesRouter);
 app.use('/auth', authRouter);
 app.use('/api/theme', themeRouter);
+
+app.get('/protected', authenticateToken, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Доступ дозволено',
+    user: req.user
+  });
+});
 
 // Обробка неіснуючих маршрутів (404)
 app.use((req, res) => {
