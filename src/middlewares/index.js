@@ -1,50 +1,28 @@
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
 // Middleware для логування запитів
 export function logRequests(req, res, next) {
   console.log(`${new Date().toISOString()} - ${req.method} request to ${req.url}`);
   next();
 }
 
-// Middleware для перевірки JWT токена
+// Middleware для перевірки автентифікації через сесію Passport
 export function authenticateToken(req, res, next) {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Access denied. No token provided.' 
-    });
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(403).json({ 
-      success: false, 
-      message: 'Invalid or expired token.' 
-    });
+  if (req.accepts('html')) {
+    return res.redirect('/auth/login');
   }
+
+  return res.status(401).json({
+    success: false,
+    message: 'Не авторизований'
+  });
 }
 
 // Middleware для опціональної автентифікації (не блокує, якщо токена немає)
 export function optionalAuth(req, res, next) {
-  const token = req.cookies.token;
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
-    } catch (error) {
-      // Токен невалідний, але продовжуємо без автентифікації
-      req.user = null;
-    }
-  }
-
+  req.user = req.user || null;
   next();
 }
 
