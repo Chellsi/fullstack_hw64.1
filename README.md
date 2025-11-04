@@ -33,7 +33,7 @@
 ## 🚀 Встановлення та запуск
 1. Клонувати репозиторій:
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/Chellsi/fullstack_hw64.1
    cd fullstack_hw64.1
    ```
 
